@@ -8,29 +8,33 @@
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
 services:
+
+# Confguration for the server service.
   server:
     build:
       context: .
+      target: dev
+    ports:
+      - 3000:3000 # for local development
+      - 9229:9229 # for debugging
     environment:
       NODE_ENV: production
       POSTGRES_HOST: db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD_FILE: /run/secrets/db-password
       POSTGRES_DB: example
-    ports:
-      - 3000:3000
-
-# The commented out section below is an example of how to define a PostgreSQL
-# database that your application can use. `depends_on` tells Docker Compose to
-# start the database before your application. The `db-data` volume persists the
-# database data between container restarts. The `db-password` secret is used
-# to set the database password. You must create `db/password.txt` and add
-# a password of your choosing to it before running `docker-compose up`.
+    
     depends_on:
       db:
         condition: service_healthy
     secrets:
         - db-password
+    volumes:
+         # Mounts the local ./src directory to /usr/src/app/src in the container. 
+         # This allows sharing of source code between the host and container.
+      - ./src:/usr/src/app/src 
+
+# Configuration for the database service.
   db:
     image: postgres
     restart: always

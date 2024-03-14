@@ -42,5 +42,19 @@ COPY . .
 # Run the application.
 CMD node src/index.js
 
+# For test stage
+FROM base as test
+ENV NODE_ENV test
 
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=package-lock.json,target=package-lock.json \
+    --mount=type=cache,target=/root/.npm \
+    npm ci --include=dev
+
+# Run the application as a non-root user.
+USER node
+# Copy the rest of the source files into the image.
+COPY . .
+# Run the application.
+CMD npm run test
 
